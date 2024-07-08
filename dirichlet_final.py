@@ -58,7 +58,6 @@ def loss(y, alpha):
     grad (numpy array): Gradient of the loss function with respect to alpha.
     hess (numpy array): Hessian of the loss function with respect to alpha.
     """
-    epsilon = 1  # A small constant to avoid division by zero or log of zero
     num_row = alpha.shape[0]  # Number of rows in the alpha array
     num_col = alpha.shape[1]  # Number of columns in the alpha array
 
