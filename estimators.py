@@ -5,19 +5,30 @@ from sklearn.metrics import accuracy_score
 
 class LightningEstimator():
 
-    def __init__(self, model, max_epochs=100, batch_size=32):
+    def __init__(self, model, max_epochs=-1, batch_size=2**10):
         self.model = model
-        self.trainer = pl.Trainer(max_epochs=max_epochs, accelerator='cpu')
+        self.create_trainer()
         self.max_epochs = max_epochs
         self.batch_size = batch_size
+
+    def create_trainer(self):
+        callbacks = [
+            pl.callbacks.EarlyStopping(monitor='train_loss', patience=30),
+            # pl.callbacks.ModelCheckpoint(monitor='train_loss', save_top_k=1, mode='min')
+        ]
+        self.trainer = pl.Trainer(accelerator='cpu', logger=False, callbacks=callbacks, enable_checkpointing=False)
         
     def fit(self, x, y):
         if isinstance(x, np.ndarray):
             x = torch.from_numpy(x).float()
             y = torch.from_numpy(y).long()
-        dataset = torch.utils.data.TensorDataset(x, y)
-        dataloader = torch.utils.data.DataLoader(dataset, batch_size=self.batch_size)
+        dataset = torch.utils.data.TensorDataset(x, y.squeeze())
+        dataloader = torch.utils.data.DataLoader(dataset, batch_size=self.batch_size, drop_last=False)
         self.trainer.fit(self.model, dataloader)
+        # self.model = self.model.load_from_checkpoint(self.trainer.checkpoint_callback.best_model_path)
+        # return best lightning model checkpoint
+        # reset trainer TODO hacky
+        self.create_trainer()
         return self  # for sklearn consistency
         
     def predict(self, x):
@@ -42,6 +53,7 @@ class LightningEstimator():
 class LogisticRegression(pl.LightningModule):
     def __init__(self, input_dim, output_dim):
         super(LogisticRegression, self).__init__()
+        self.save_hyperparameters()
         self.linear = torch.nn.Linear(input_dim, output_dim)
         
     def forward(self, x):
@@ -54,10 +66,14 @@ class LogisticRegression(pl.LightningModule):
         x, y = batch
         y_hat = self(x)
         loss = torch.nn.functional.cross_entropy(y_hat, y)
+        self.log('train_loss', loss)
+        import time
+        time.sleep(0.01)
         return loss
     
     def configure_optimizers(self):
-        return torch.optim.AdamW(self.parameters(), lr=0.1)
+        return torch.optim.SGD(self.parameters(), lr=1.)
+        # return torch.optim.AdamW(self.parameters(), lr=1.)
 
 
 class MLP(pl.LightningModule):
@@ -89,7 +105,8 @@ if __name__ == '__main__':
     # x = torch.randn(1000, 10)
     # y = torch.randint(0, 2, (1000,))
     x = np.random.randn(1000, 10)
-    y = np.random.randint(0, 2, (1000,))
+    # y = np.random.randint(0, 2, (1000,))
+    y = (x.mean(axis=1) > 0.5).astype(int)
 
     # create estimator
     # model = LogisticRegression(input_dim=10, output_dim=2)
