@@ -2,7 +2,7 @@
 import logging
 import math
 from warnings import simplefilter
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from omegaconf import OmegaConf
 import numpy as np
@@ -25,7 +25,7 @@ import estimators
 class LoopConfig:
     times: int=100
     init: int=50
-    batch_size: int=1
+    batch_size: int=10
 
 @dataclass
 class Learner:
@@ -35,17 +35,17 @@ class Learner:
 class ActiveLearningConfig:
     loop: LoopConfig=LoopConfig()
     learner: Learner=Learner()
+    feature_cols: list=field(default_factory=lambda: ['feat_pca_{}'.format(i) for i in range(20)])
+    label_cols: list=field(default_factory=lambda: ['classification_label'])
 
 
-
-def loaddata():
+def loaddata(cfg) -> pd.DataFrame:
     # expect within current folder
     expected_csv_loc = 'desi_representations_subset.csv'
     df = pd.read_csv(expected_csv_loc)
     # load the data
-    columns_to_select = ['feat_pca_{}'.format(i) for i in range(20)] + ['classification_label']
-    X = df[columns_to_select]
-    return X
+    columns_to_select = cfg.feature_cols + cfg.label_cols
+    return df[columns_to_select]
 
 
 
@@ -59,27 +59,29 @@ def plot():
     loop (int): Number of data points in each batch of iteration (default = 1)
     regression_method (str): Method for regression ('L' for Logistic Regression, 'M' for MLPClassifier)
     """
-
-    # Load and split the data into test and train sets
-    test = loaddata().sample(n=2000, random_state=1)
-    train = loaddata().drop(test.index).reset_index(drop=True)
-    test.reset_index(drop=True)
-
     # keep all hparams here
     cfg = OmegaConf.structured(ActiveLearningConfig)
     # can override config values here
 
-    # cfg.learner.regression_method = 'pytorch'
+    cfg.learner.regression_method = 'pytorch'
+    # cfg.learner.regression_method = 'L'
 
     print(OmegaConf.to_yaml(cfg))
+
+    # Load and split the data into test and train sets
+    test = loaddata(cfg).sample(n=2000, random_state=1)
+    train = loaddata(cfg).drop(test.index).reset_index(drop=True)
+    test.reset_index(drop=True)
+
+
 
     # Initialize the X-axis values for the plot
     x = np.arange(cfg.loop.times)
 
     # Calculate the Y-axis values for different sampling methods
     y1 = abs(np.log(1 - np.array(randomapp(train, test, cfg))))
-    y2 = abs(np.log(1 - np.array(ambiguous(train, test, cfg))))
-    y3 = abs(np.log(1 - np.array(diverse_tree(train, test, cfg))))
+    # y2 = abs(np.log(1 - np.array(ambiguous(train, test, cfg))))
+    # y3 = abs(np.log(1 - np.array(diverse_tree(train, test, cfg))))
     # y_baseline = get_y_baseline(train, test, cfg)
 
     # Plot a horizontal line representing the baseline score
@@ -89,10 +91,10 @@ def plot():
     plt.plot(x, y1, label='random', marker='o')
 
     # Plot the performance of the ambiguous sampling method
-    plt.plot(x, y2, label='ambiguous', marker='s')
+    # plt.plot(x, y2, label='ambiguous', marker='s')
 
     # Plot the performance of the diverse sampling method
-    plt.plot(x, y3, label='diverse', marker='s')
+    # plt.plot(x, y3, label='diverse', marker='s')
 
     # Set the labels for the X and Y axes
     plt.xlabel('Iterations')
@@ -128,6 +130,8 @@ def get_active_learner(cfg):
     elif cfg.learner.regression_method == "pytorch":
         model = estimators.LogisticRegression(20, 2)  # 20 features, 2 classes
         clf = estimators.LightningEstimator(model)
+    else:
+        raise ValueError(f"Invalid regression method: {cfg.learner.regression_method}")
     return clf
 
 
@@ -154,35 +158,38 @@ def randomapp(train, test, cfg):
     clf = get_active_learner(cfg)
 
     # Initialize the label with a sample from the train data
-    label = train.sample(n=cfg.loop.init)
+    labelled = train.sample(n=cfg.loop.init)
 
     # Remove the sampled label data from the pool
-    pool = train.drop(label.index)
+    pool = train.drop(labelled.index)
 
     # Initialize a list to store test scores for each iteration
     trace = []
 
     # Iteratively select data points and evaluate the model
-    for _ in range(cfg.loop.times):
+    for iteration_n in range(cfg.loop.times):
+        print('Iteration: ', iteration_n)
         # Randomly sample data points from the pool
         new = pool.sample(n=cfg.loop.batch_size)
 
-        # Add the new samples to the label
-        label = pd.concat([label, new])
+        # Add the new samples to the labelled
+        labelled = pd.concat([labelled, new])
+        print(len(labelled))
 
         # Remove the new samples from the pool
         pool = pool.drop(new.index)
 
         # Prepare data for model training
-        X = label.iloc[:, :(label.shape[1] - 1)].values
-        y = label.iloc[:, -1].values
+        X = labelled[cfg.feature_cols].values
+        y = labelled[cfg.label_cols].values
 
-        test_x = test.iloc[:, :(test.shape[1] - 1)].values
-        test_y = test.iloc[:, -1].values
+        test_x = test[cfg.feature_cols].values
+        test_y = test[cfg.label_cols].values
 
         # Train the model and store the score
-        trace.append(clf.fit(X, y).score(test_x, test_y))
-
+        clf.fit(X, y)
+        trace.append(clf.score(test_x, test_y))
+    print(trace)
     return trace
 
 
