@@ -64,6 +64,7 @@ def plot():
     # can override config values here
 
     cfg.learner.regression_method = 'pytorch'
+    # cfg.learner.regression_method = 'L'
 
     print(OmegaConf.to_yaml(cfg))
 

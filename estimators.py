@@ -16,7 +16,7 @@ class LightningEstimator():
             pl.callbacks.EarlyStopping(monitor='train_loss', patience=30),
             # pl.callbacks.ModelCheckpoint(monitor='train_loss', save_top_k=1, mode='min')
         ]
-        self.trainer = pl.Trainer(accelerator='cpu', logger=False, callbacks=callbacks, enable_checkpointing=False)
+        self.trainer = pl.Trainer(accelerator='cpu', logger=False, callbacks=callbacks, enable_checkpointing=True)
         
     def fit(self, x, y):
         if isinstance(x, np.ndarray):
@@ -25,7 +25,7 @@ class LightningEstimator():
         dataset = torch.utils.data.TensorDataset(x, y.squeeze())
         dataloader = torch.utils.data.DataLoader(dataset, batch_size=self.batch_size, drop_last=False)
         self.trainer.fit(self.model, dataloader)
-        # self.model = self.model.load_from_checkpoint(self.trainer.checkpoint_callback.best_model_path)
+        self.model = self.model.load_from_checkpoint(self.trainer.checkpoint_callback.best_model_path)
         # return best lightning model checkpoint
         # reset trainer TODO hacky
         self.create_trainer()
@@ -67,8 +67,8 @@ class LogisticRegression(pl.LightningModule):
         y_hat = self(x)
         loss = torch.nn.functional.cross_entropy(y_hat, y)
         self.log('train_loss', loss)
-        import time
-        time.sleep(0.01)
+        # import time
+        # time.sleep(0.01)
         return loss
     
     def configure_optimizers(self):
