@@ -25,7 +25,7 @@ class LightningEstimator():
         dataset = torch.utils.data.TensorDataset(x, y.squeeze())
         dataloader = torch.utils.data.DataLoader(dataset, batch_size=self.batch_size, drop_last=False)
         self.trainer.fit(self.model, dataloader)
-        self.model = self.model.load_from_checkpoint(self.trainer.checkpoint_callback.best_model_path)
+        self.model = self.model.__class__.load_from_checkpoint(self.trainer.checkpoint_callback.best_model_path)
         # return best lightning model checkpoint
         # reset trainer TODO hacky
         self.create_trainer()
