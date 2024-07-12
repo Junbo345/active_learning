@@ -7,9 +7,9 @@ class LightningEstimator():
 
     def __init__(self, model, max_epochs=-1, batch_size=2**10):
         self.model = model
-        self.create_trainer()
         self.max_epochs = max_epochs
         self.batch_size = batch_size
+        self.create_trainer()
 
     def create_trainer(self):
         callbacks = [
