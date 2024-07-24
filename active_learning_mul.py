@@ -15,7 +15,7 @@ from scipy.spatial import cKDTree
 from scipy.spatial.distance import cdist
 from scipy.spatial import cKDTree
 
-import test as estimators
+import estimators_mul as estimators
 
 # default config values
 
