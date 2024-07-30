@@ -33,8 +33,8 @@ class Learner:
 
 @dataclass
 class ActiveLearningConfig:
-    loop: LoopConfig=LoopConfig()
-    learner: Learner=Learner()
+    loop: LoopConfig = field(default_factory=LoopConfig)
+    learner: Learner = field(default_factory=Learner)
     feature_cols: list=field(default_factory=lambda: ['feat_pca_{}'.format(i) for i in range(20)])
     label_cols: list=field(default_factory=lambda: ['classification_label'])
 
