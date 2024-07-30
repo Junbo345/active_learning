@@ -1,3 +1,4 @@
 *.csv
 lightning_logs
 __pycache__
+checkpoints
