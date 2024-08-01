@@ -15,7 +15,7 @@ from sklearn.linear_model import LogisticRegression
 from scipy.spatial import cKDTree
 from scipy.spatial.distance import cdist
 import matplotlib.ticker as ticker
-from sklearn.cluster import KMeans
+from sklearn.cluster import KMeans, kmeans_plusplus
 import estimators_v2 as estimators
 
 
@@ -219,18 +219,18 @@ def ambiguous(train, test, cfg):
     number = []
 
     for i in range(cfg.loop.times):
-        X_label = label.iloc[:, :-3].values
-        y_label = label.iloc[:, -3:].values
+        X_label = label[cfg.feature_cols].values
+        y_label = label[cfg.label_cols].values
         model = clf.fit(X_label, y_label)
-        X_pool = pool.iloc[:, :-3].values
+        X_pool = pool[cfg.feature_cols].values
         pred_proba = model.predict_proba(X_pool)[:, 1]
         diff = np.abs(0.333 - pred_proba)
         top_n_indices = np.argsort(diff)[:cfg.loop.batch_size]
         label = pd.concat([label, pool.iloc[top_n_indices]], ignore_index=True)
         pool = pool.drop(pool.index[top_n_indices]).reset_index(drop=True)
-        X_test = test.iloc[:, :-3].values
-        y_test = test.iloc[:, -3:].values
-        score = model.score(X_test, y_test)
+        test_x = test[cfg.feature_cols].values
+        test_y = test[cfg.label_cols].values
+        score = model.score(test_x, test_y)
         number.append(score)
 
     return number
@@ -305,6 +305,16 @@ def diverse_tree(train, test, cfg):
 
     return number
 
+def find_row_indices(subset_array, target_array):
+    indices = []
+    for subset_row in subset_array:
+        # Find the index of the matching row in the target array
+        for i, target_row in enumerate(target_array):
+            if np.array_equal(subset_row, target_row):
+                indices.append(i)
+                break
+    return indices
+
 def badge(train, test, cfg):
     """
     Evaluate the performance of random sampling over multiple iterations.
@@ -353,19 +363,8 @@ def badge(train, test, cfg):
             g_x_mul.append(g_x_ind.flatten())
 
         g_x_final = np.array(g_x_mul)
-        kmeans = KMeans(n_clusters=cfg.loop.batch_size, random_state=0, n_init="auto").fit(g_x_final)
+        kmeans, indices = kmeans_plusplus(g_x_final,n_clusters=cfg.loop.batch_size, random_state=0)
 
-        labels = kmeans.labels_
-        coreset = []
-        cluster_centers = kmeans.cluster_centers_
-        for i in range(cfg.loop.batch_size):
-            cluster_points = g_x_final[labels == i]
-            # Select the closest point to the cluster center
-            distances = np.linalg.norm(cluster_points - cluster_centers[i], axis=1)
-            closest_point_idx = np.argmin(distances)
-            coreset.append(cluster_points[closest_point_idx])
-        X_coreset = np.array(coreset)
-        indices = find_row_indices(coreset, g_x_final)
 
         rows_to_transfer = pool.loc[indices]
         labelled = pd.concat([labelled, rows_to_transfer], ignore_index=True)
@@ -375,16 +374,6 @@ def badge(train, test, cfg):
         trace.append(clf.score(test_x, test_y))
 
     return trace
-
-def find_row_indices(subset_array, target_array):
-    indices = []
-    for subset_row in subset_array:
-        # Find the index of the matching row in the target array
-        for i, target_row in enumerate(target_array):
-            if np.array_equal(subset_row, target_row):
-                indices.append(i)
-                break
-    return indices
 
 
 def plot():
@@ -426,6 +415,6 @@ if __name__ == '__main__':
     simplefilter(action='ignore')
 
     # loaddata()
-    get_data(iterations=[6], initial=[50, 50], batch=[500], method=["pytorch_N"])
+    get_data(iterations=[30], initial=[50], batch=[100], method=["pytorch_N"])
     # get_data(iterations=[75], initial=[50], batch=[30], method=["pytorch_N"])
 
