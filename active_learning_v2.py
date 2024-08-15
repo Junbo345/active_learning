@@ -8,12 +8,16 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
+import torch
+
 from sklearn.neural_network import MLPClassifier
 from sklearn.linear_model import LogisticRegression
 
 from scipy.spatial import cKDTree
 from scipy.spatial.distance import cdist
 import matplotlib.ticker as ticker
+
+from sklearn.cluster import KMeans, kmeans_plusplus
 
 import estimators_v2 as estimators
 
@@ -54,7 +58,9 @@ def loaddata(cfg) -> pd.DataFrame:
     """
     Load the galaxy dataset, preprocess it, and return a DataFrame with features and one-hot encoded labels.
     """
-    expected_csv_loc = 'data/karina_representations_for_junbo_khalid.csv'  # Expect the CSV file to be in the current folder
+
+    expected_csv_loc = 'galaxy.csv'  # Expect the CSV file to be in the current folder
+
     df = pd.read_csv(expected_csv_loc)
     df['other'] = 1 - (df['s1_lrg_fraction'] + df['s1_spiral_fraction'])
 
@@ -107,16 +113,20 @@ def get_data(iterations, initial, batch, method):
         x = np.arange(cfg.loop.times) * cfg.loop.batch_size + cfg.loop.init
 
         # Calculate the Y-axis values for different sampling methods
-        y1 = abs(np.log(1 - np.array(randomapp(train, test, cfg))))
+
+        y1 = abs(np.log(1 - np.array(badge(train, test, cfg))))
         y2 = abs(np.log(1 - np.array(ambiguous(train, test, cfg))))
         # y3 = abs(np.log(1 - np.array(diverse_tree(train, test, cfg))))
         output[f'x{ind + 1} {method[ind]}'] = np.concatenate([x, np.full(col - len(x), np.nan)])
-        output[f'random_{ind + 1}'] = np.concatenate([y1, np.full(col - len(x), np.nan)])
+        output[f'badge_{ind + 1}'] = np.concatenate([y1, np.full(col - len(x), np.nan)])
+
         output[f'uncertainty_{ind + 1}'] = np.concatenate([y2, np.full(col - len(x), np.nan)])
         # output[f'div_{ind + 1}'] = np.concatenate([y3, np.full(col - len(x), np.nan)])
 
     # Save the output to a CSV file
-    csv_file_path = 'results/latest_model.csv'
+
+    csv_file_path = r'C:/Users/20199/Desktop/model.csv'
+
     output.to_csv(csv_file_path, index=False)
 
 
@@ -218,18 +228,22 @@ def ambiguous(train, test, cfg):
     number = []
 
     for i in range(cfg.loop.times):
-        X_label = label.iloc[:, :-3].values
-        y_label = label.iloc[:, -3:].values
+
+        X_label = label[cfg.feature_cols].values
+        y_label = label[cfg.label_cols].values
         model = clf.fit(X_label, y_label)
-        X_pool = pool.iloc[:, :-3].values
+        X_pool = pool[cfg.feature_cols].values
+
         pred_proba = model.predict_proba(X_pool)[:, 1]
         diff = np.abs(0.333 - pred_proba)
         top_n_indices = np.argsort(diff)[:cfg.loop.batch_size]
         label = pd.concat([label, pool.iloc[top_n_indices]], ignore_index=True)
         pool = pool.drop(pool.index[top_n_indices]).reset_index(drop=True)
-        X_test = test.iloc[:, :-3].values
-        y_test = test.iloc[:, -3:].values
-        score = model.score(X_test, y_test)
+
+        test_x = test[cfg.feature_cols].values
+        test_y = test[cfg.label_cols].values
+        score = model.score(test_x, test_y)
+
         number.append(score)
 
     return number
@@ -305,6 +319,77 @@ def diverse_tree(train, test, cfg):
     return number
 
 
+def find_row_indices(subset_array, target_array):
+    indices = []
+    for subset_row in subset_array:
+        # Find the index of the matching row in the target array
+        for i, target_row in enumerate(target_array):
+            if np.array_equal(subset_row, target_row):
+                indices.append(i)
+                break
+    return indices
+
+def badge(train, test, cfg):
+    """
+    Evaluate the performance of random sampling over multiple iterations.
+
+    Parameters:
+    train (DataFrame): Training data
+    test (DataFrame): Testing data
+    cfg (ActiveLearningConfig): Configuration for active learning
+
+    Returns:
+    List[float]: Test scores for each iteration
+    """
+    if train is None or test is None:
+        raise ValueError("Both train and test data must be provided.")
+
+    clf = get_active_learner(cfg)
+    labelled = train.sample(n=cfg.loop.init, random_state=1)
+    pool = train.drop(labelled.index).reset_index(drop=True)
+    trace = []
+
+    for k in range(cfg.loop.times):
+
+        X = labelled[cfg.feature_cols].values
+        y = labelled[cfg.label_cols].values
+        clf.fit(X, y)
+        X_quary = pool[cfg.feature_cols].values
+        y_result = clf.predict_proba(X_quary)
+        predicted_classes = np.argmax(y_result, axis=1)
+        y_onehot = np.zeros_like(y_result)
+        y_onehot[np.arange(y_result.shape[0]), predicted_classes] = 1
+
+        y_final = y_result - y_onehot
+
+        X_tensor = torch.tensor(X_quary, dtype=torch.float32)
+        with torch.no_grad():
+            key = torch.relu(clf.model.linear1(X_tensor)).numpy()
+
+        g_x_mul = []
+
+        for _ in range(len(key)):
+            num_cols_array1 = y_final.shape[1]  # 3
+            num_cols_array2 = key.shape[1]
+            g_x_ind = np.empty((num_cols_array1, num_cols_array2))
+            for n_col in range(y_result.shape[1]):
+                g_x_ind[n_col, :] = y_final[_, n_col] * key[_, :]
+            g_x_mul.append(g_x_ind.flatten())
+
+        g_x_final = np.array(g_x_mul)
+        kmeans, indices = kmeans_plusplus(g_x_final,n_clusters=cfg.loop.batch_size, random_state=0)
+
+
+        rows_to_transfer = pool.loc[indices]
+        labelled = pd.concat([labelled, rows_to_transfer], ignore_index=True)
+        pool = pool.drop(indices).reset_index(drop=True)
+        test_x = test[cfg.feature_cols].values
+        test_y = test[cfg.label_cols].values
+        trace.append(clf.score(test_x, test_y))
+
+    return trace
+
+
 def plot():
     """
     Generate and display plots to visualize the performance of different sampling methods.
@@ -344,6 +429,9 @@ if __name__ == '__main__':
     simplefilter(action='ignore')
 
     # loaddata()
-    get_data(iterations=[75, 75], initial=[50, 50], batch=[30, 30], method=["pytorch_L", "pytorch_N"])
+
+
+    get_data(iterations=[30], initial=[50], batch=[100], method=["pytorch_N"])
+
     # get_data(iterations=[75], initial=[50], batch=[30], method=["pytorch_N"])
 
