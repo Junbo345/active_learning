@@ -1,6 +1,7 @@
 import numpy as np
 import torch
 import pytorch_lightning as pl
+import torch.nn as nn
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
 
@@ -102,24 +103,33 @@ class LogisticRegression(pl.LightningModule):
 
 
 class MLP(pl.LightningModule):
-    def __init__(self, input_dim, output_dim):
+    def __init__(self, input_size, hidden_sizes, output_size):
         super(MLP, self).__init__()
         self.save_hyperparameters()
-        self.linear1 = torch.nn.Linear(input_dim, 128)
-        self.linear2 = torch.nn.Linear(128, output_dim)
-        # self.linear1 = torch.nn.Linear(input_dim, output_dim)
+        layers = []
+        sizes = [input_size] + hidden_sizes + [output_size]
+        for i in range(len(sizes) - 1):
+            layers.append(nn.Linear(sizes[i], sizes[i + 1]))
+            if i < len(sizes) - 2:
+                layers.append(nn.ReLU())
+        self.model = nn.Sequential(*layers)
+
+        # Register a hook for the second last layer
+        self.second_last_output = None
+        self.model[-3].register_forward_hook(self.hook_fn)
+
+    def hook_fn(self, module, input, output):
+        self.second_last_output = output
 
     def forward(self, x):
-        x = torch.relu(self.linear1(x))
-        return self.linear2(x)
-        # return x
+        return self.model(x)
 
     def predict_proba(self, x):
-        return torch.nn.functional.softmax(self(x), dim=1)
+        return torch.nn.functional.softmax(self.model(x), dim=1)
 
     def training_step(self, batch, batch_idx):
         x, y = batch
-        y_hat = self(x)
+        y_hat = self.model(x)
         y_max = torch.argmax(y, dim=1)
         loss = torch.nn.functional.cross_entropy(y_hat, y_max)
         self.log('train_loss', loss)
@@ -127,7 +137,7 @@ class MLP(pl.LightningModule):
 
     def validation_step(self, batch, batch_idx):
         x, y = batch
-        y_hat = self(x)
+        y_hat = self.model(x)
         y_max = torch.argmax(y, dim=1)
         loss = torch.nn.functional.cross_entropy(y_hat, y_max)
         self.log('validation_loss', loss)
