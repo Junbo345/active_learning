@@ -24,23 +24,22 @@ from sklearn.cluster import kmeans_plusplus
 
 @dataclass
 class LoopConfig:
-    times: int = 50
-    init: int = 50
-    batch_size: int = 15
+    times: int = 50  # Number of iterations in the active learning loop
+    init: int = 50  # Initial number of samples to start the active learning process
+    batch_size: int = 15  # Number of samples to add in each iteration
 
 
 @dataclass
 class Learner:
-    regression_method: str = 'L'
+    regression_method: str = 'L'  # Default regression method (L: Logistic Regression, M: MLPClassifier)
 
 
 @dataclass
 class ActiveLearningConfig:
     loop: LoopConfig = field(default_factory=LoopConfig)
     learner: Learner = field(default_factory=Learner)
-    feature_cols: list = field(default_factory=lambda: ['feat_pca_{}'.format(i) for i in range(20)])
-    label_cols: list = field(default_factory=lambda: ['s1_lrg_fraction', 's1_spiral_fraction', 'other'])
-
+    feature_cols: list = field(default_factory=lambda: ['feat_pca_{}'.format(i) for i in range(20)])  # Feature column names
+    label_cols: list = field(default_factory=lambda: ['s1_lrg_fraction', 's1_spiral_fraction', 'other'])  # Label column names
 
 def label_highest_prob(row):
     """
@@ -106,19 +105,19 @@ def get_data(iterations, initial, batch, method):
 
         # Initialize the X-axis values for the plot
         # this is now number of labelled points (galaxies)
-        x = np.arange(cfg.loop.times) * cfg.loop.batch_size + cfg.loop.init
+        x = np.arange(cfg.loop.times+1) * cfg.loop.batch_size + cfg.loop.init
 
         # Calculate the Y-axis values for different sampling methods
         y1 = abs(np.log(1 - np.array(badge(train, test, cfg))))
-        y2 = abs(np.log(1 - np.array(ambiguous(train, test, cfg))))
-        # y3 = abs(np.log(1 - np.array(diverse_tree(train, test, cfg))))
-        output[f'x{ind + 1} {method[ind]}'] = np.concatenate([x, np.full(col - len(x), np.nan)])
-        output[f'badge_{ind + 1}'] = np.concatenate([y1, np.full(col - len(x), np.nan)])
-        output[f'uncertainty_{ind + 1}'] = np.concatenate([y2, np.full(col - len(x), np.nan)])
-        # output[f'div_{ind + 1}'] = np.concatenate([y3, np.full(col - len(x), np.nan)])
+        y2 = abs(np.log(1 - np.array(diverse_tree(train, test, cfg))))
+        y3 = abs(np.log(1 - np.array(randomapp(train, test, cfg))))
+        output[f'x{ind + 1} {method[ind]}'] = np.concatenate([x, np.full(col - len(x)+1, np.nan)])
+        output[f'badge_{ind + 1}'] = np.concatenate([y1, np.full(col - len(x)+1, np.nan)])
+        output[f'uncertainty_{ind + 1}'] = np.concatenate([y2, np.full(col - len(x)+1, np.nan)])
+        output[f'random_{ind + 1}'] = np.concatenate([y3, np.full(col - len(x)+1, np.nan)])
 
     # Save the output to a CSV file
-    csv_file_path = r'C:/Users/20199/Desktop/model.csv'
+    csv_file_path = r'C:/Users/20199/Desktop/model_div.csv'
     output.to_csv(csv_file_path, index=False)
 
 
@@ -187,7 +186,14 @@ def randomapp(train, test, cfg):
     clf = get_active_learner(cfg)
     labelled = train.sample(n=cfg.loop.init, random_state=1)
     pool = train.drop(labelled.index)
+    test_x = test[cfg.feature_cols].values
+    test_y = test[cfg.label_cols].values
     trace = []
+    X = labelled[cfg.feature_cols].values
+    y = labelled[cfg.label_cols].values
+    clf.fit(X, y)
+    trace.append(clf.score(test_x, test_y))
+
 
     for iteration_n in range(cfg.loop.times):
         new = pool.sample(n=cfg.loop.batch_size)
@@ -195,8 +201,6 @@ def randomapp(train, test, cfg):
         pool = pool.drop(new.index)
         X = labelled[cfg.feature_cols].values
         y = labelled[cfg.label_cols].values
-        test_x = test[cfg.feature_cols].values
-        test_y = test[cfg.label_cols].values
         clf.fit(X, y)
         trace.append(clf.score(test_x, test_y))
     return trace
@@ -234,6 +238,10 @@ def ambiguous(train, test, cfg):
         score = model.score(test_x, test_y)
         number.append(score)
 
+    X_label = label[cfg.feature_cols].values
+    y_label = label[cfg.label_cols].values
+    model = clf.fit(X_label, y_label)
+    number.append(model.score(test_x, test_y))
     return number
 
 
@@ -290,19 +298,24 @@ def diverse_tree(train, test, cfg):
     number = []
 
     for i in range(cfg.loop.times):
-        X_label = label.iloc[:, :-3].values
-        y_label = label.iloc[:, -3:].values
+        X_label = label[cfg.feature_cols].values
+        y_label = label[cfg.label_cols].values
         model = clf.fit(X_label, y_label)
-        X_pool = pool.iloc[:, :-3].values
+        X_pool = pool[cfg.feature_cols].values
         tree = cKDTree(X_label)
         distances, indices = tree.query(X_pool, k=1)
         top_n_indices = np.argsort(distances)[-cfg.loop.batch_size:]
         label = pd.concat([label, pool.iloc[top_n_indices]], ignore_index=True)
         pool = pool.drop(pool.index[top_n_indices]).reset_index(drop=True)
-        X_test = test.iloc[:, :-3].values
-        y_test = test.iloc[:, -3:].values
+        X_test = test[cfg.feature_cols].values
+        y_test = test[cfg.label_cols].values
         score = model.score(X_test, y_test)
         number.append(score)
+
+    X_label = label[cfg.feature_cols].values
+    y_label = label[cfg.label_cols].values
+    model = clf.fit(X_label, y_label)
+    number.append(model.score(test[cfg.feature_cols].values, test[cfg.label_cols].values))
 
     return number
 
@@ -393,6 +406,11 @@ def badge(train, test, cfg):
         test_y = test[cfg.label_cols].values
         trace.append(clf.score(test_x, test_y))
 
+    X_label = labelled[cfg.feature_cols].values
+    y_label = labelled[cfg.label_cols].values
+    model = clf.fit(X_label, y_label)
+    trace.append(model.score(test_x, test_y))
+
     return trace
 
 
@@ -435,6 +453,6 @@ if __name__ == '__main__':
     simplefilter(action='ignore')
 
     # loaddata()
-    get_data(iterations=[6], initial=[50], batch=[500], method=["pytorch_N"])
+    get_data(iterations=[6,10], initial=[50,70], batch=[500,300], method=["pytorch_N","pytorch_N"])
     # get_data(iterations=[75], initial=[50], batch=[30], method=["pytorch_N"])
 
