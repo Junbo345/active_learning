@@ -117,7 +117,7 @@ def get_data(iterations, initial, batch, method):
         output[f'random_{ind + 1}'] = np.concatenate([y3, np.full(col - len(x)+1, np.nan)])
 
     # Save the output to a CSV file
-    csv_file_path = r'C:/Users/20199/Desktop/model_div.csv'
+    csv_file_path = # Add path
     output.to_csv(csv_file_path, index=False)
 
 
