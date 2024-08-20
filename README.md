@@ -60,6 +60,7 @@ Then loading the dataset: <br/>
 <br/>
 Finally, compute a list of the model scores to identify how well your model classifies the data:
 <br/>
+
 ```ruby
     test = loaddata(cfg).sample(n=1500, random_state=1)
     train = loaddata(cfg).drop(test.index).reset_index(drop=True)
