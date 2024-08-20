@@ -7,7 +7,8 @@ This code contains different active learning strategies to improve the classific
 To Download the code using git: ```git@github.com:Junbo345/active_learning.git``` <br/>
 <br/>
 To Download the code using GithubCLI to bring GitHub to your terminal: ```gh repo clone Junbo345/active_learning```
-<br//>
+<br/>
+
 Otherwise, the code can be copied and pasted into a python environment and run from there
 
 # Quickstart
