@@ -5,5 +5,5 @@ This code contains different active learning strategies to improve the classific
 
 # Installation
 
-To Download the code using git: git@github.com:Junbo345/active_learning.git
+To Download the code using git: ```git@github.com:Junbo345/active_learning.git``` 
 To Download the code using GithubCLI to bring GitHub to your terminal: gh repo clone Junbo345/active_learning
