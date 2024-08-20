@@ -13,16 +13,12 @@ To Download the code using GithubCLI to bring GitHub to your terminal: ```gh rep
 
 # Quickstart
 
-Suppose you wanted to determine how well some query method can accurately classify lrg galaxies in some small dataset that contains a number of lrg and non-lrg galaxies. We can calculate the proposed model scores by first configurating the number of iterations of batch size of the query function and determining the regression method: <br/>
+Suppose you wanted to determine how well some query method can accurately classify between lrg galaxies, ring galaxies, and other galaxies in some small dataset. We can calculate the proposed model scores by first configurating the number of iterations of batch size of the query function and determining the regression method: <br/>
 
 ```ruby
 import numpy as np
-import pandas as pd
-import torch
-from dataclasses import dataclass, field
-from omegaconf import OmegaConf
-from sklearn.neural_network import MLPClassifier
-from sklearn.linear_model import LogisticRegression
+import active_learnig_badge as al
+import estimators_badge.py
 
 @dataclass
 class LoopConfig:
@@ -40,8 +36,15 @@ class ActiveLearningConfig:
     learner: Learner = field(default_factory=Learner)
     feature_cols: list = field(default_factory=lambda: ['feat_pca_{}'.format(i) for i in range(20)])
     label_cols: list = field(default_factory=lambda: ['s1_lrg'])
+
+# load the dataset using provided csv file
+data = al.loaddata(cfg)
+
+# generate a csv file containing the model scores of the different query methods
+al.get_data(iterations = [50, 60], initial = [30, 40], batch = [50, 60], method = ["pytorch_N","pytorch_N"])
 ```
 <br/>
+
 
 
 
