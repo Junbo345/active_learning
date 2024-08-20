@@ -13,7 +13,7 @@ To Download the code using GithubCLI to bring GitHub to your terminal: ```gh rep
 
 # Quickstart
 
-Suppose you wanted to determine how well the uncertainty method can accurately classify lrg galaxies in some small dataset that contains a number of lrg and non-lrg galaxies. We can calculate the proposed model scores by: <br/>
+Suppose you wanted to determine how well some query method can accurately classify lrg galaxies in some small dataset that contains a number of lrg and non-lrg galaxies. We can calculate the proposed model scores by first configurating the number of iterations of batch size of the query function: <br/>
 
 ```
 @dataclass
@@ -31,4 +31,5 @@ class ActiveLearningConfig:
     loop: LoopConfig = field(default_factory=LoopConfig)
     learner: Learner = field(default_factory=Learner)
     feature_cols: list = field(default_factory=lambda: ['feat_pca_{}'.format(i) for i in range(20)])
-    label_cols: list = field(default_factory=lambda: ['s1_lrg_fraction'])```
+    label_cols: list = field(default_factory=lambda: ['s1_lrg'])
+```
