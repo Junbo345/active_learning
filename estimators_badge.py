@@ -400,15 +400,3 @@ class Multiregression(pl.LightningModule):
         """
         return torch.optim.AdamW(self.parameters(), lr=0.02)
 
-
-# Example usage of the models and LightningEstimator
-if __name__ == '__main__':
-    # Simulate some data
-    x = np.random.randn(1000, 10)  # Generate random input data
-    y = (x.mean(axis=1) > 0.5).astype(int)  # Generate binary labels based on the mean of the features
-
-    # Initialize a Logistic Regression model
-    model = LogisticRegression(input_dim=10, output_dim=2)
-    estimator = LightningEstimator(model, max_epochs=10)  # Create a LightningEstimator for training
-    estimator.fit(x, y)  # Train the model
-    print(estimator.score(x, y))  # Evaluate and print the model's accuracy
