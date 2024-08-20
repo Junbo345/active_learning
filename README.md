@@ -13,7 +13,7 @@ Otherwise, the code can be copied and pasted into a python environment and run f
 
 # Quickstart
 
-Suppose you wanted to determine how well some query method can accurately classify between LRG galaxies, ring galaxies, and other galaxies in some small dataset. We can calculate the proposed model scores by first configurating the number of iterations of batch size of the query function and determining the regression method: <br/>
+Suppose you wanted to determine how well some query method can accurately classify between LRG galaxies, ring galaxies, and other galaxies in some small dataset. We can calculate the proposed model scores by first configuring the number of iterations, the initial batch, and the batch size of the query functions and determining the regression method. Then putting the calculated scores into a csv file: <br/>
 
 ```ruby
 import numpy as np
