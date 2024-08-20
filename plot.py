@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 # Read the CSV file into a DataFrame
-df = pd.read_csv('model_200.csv')
+df = pd.read_csv('') # output files from active_learning_badge 
 sns.set_context('talk')
 # Calculate mean values
 df['mean_badge'] = df[[f'badge_{i}' for i in range(1, 11)]].median(axis=1)
