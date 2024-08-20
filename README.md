@@ -1,19 +1,17 @@
 # **Active Learning Strategies for Euclid Space Telescope**
 
-
-This code contains different active learning strategies to improve the classification rate for galaxy morphology.
+This code contains different active learning strategies to improve the classification rate for galaxy morphology. It contains 3 different acquisition functions (ambiguous, diverse, BADGE) that aim to maximize the model score using different regression methods such as an MLP or Multinomial Logistic Regression. After conducting multiple different experiments, it was found the BADGE method provided the highest model scores and was not affected by batch size changes meaning that it would provide the best classification for the Euclid data. 
 
 # Installation
 
 To Download the code using git: ```git@github.com:Junbo345/active_learning.git``` <br/>
 <br/>
-Then to install pytorch necessary packages into your 
 
 To Download the code using GithubCLI to bring GitHub to your terminal: ```gh repo clone Junbo345/active_learning```
 
 # Quickstart
 
-Suppose you wanted to determine how well some query method can accurately classify between lrg galaxies, ring galaxies, and other galaxies in some small dataset. We can calculate the proposed model scores by first configurating the number of iterations of batch size of the query function and determining the regression method: <br/>
+Suppose you wanted to determine how well some query method can accurately classify between LRG galaxies, ring galaxies, and other galaxies in some small dataset. We can calculate the proposed model scores by first configurating the number of iterations of batch size of the query function and determining the regression method: <br/>
 
 ```ruby
 import numpy as np
@@ -37,10 +35,10 @@ class ActiveLearningConfig:
     feature_cols: list = field(default_factory=lambda: ['feat_pca_{}'.format(i) for i in range(20)])
     label_cols: list = field(default_factory=lambda: ['s1_lrg'])
 
-# load the dataset using provided csv file
+# load the dataset using provided CSV file
 data = al.loaddata(cfg)
 
-# generate a csv file containing the model scores of the different query methods
+# generate a CSV file containing the model scores of the different query methods
 al.get_data(iterations = [50, 60], initial = [30, 40], batch = [50, 60], method = ["pytorch_N","pytorch_N"])
 ```
 # Dataset
