@@ -39,7 +39,7 @@ class ActiveLearningConfig:
     loop: LoopConfig = field(default_factory=LoopConfig)
     learner: Learner = field(default_factory=Learner)
     feature_cols: list = field(default_factory=lambda: ['feat_pca_{}'.format(i) for i in range(20)])  # Feature column names
-    label_cols: list = field(default_factory=lambda: ['s1_lrg_fraction', 's1_spiral_fraction', 'other'])  # Label column names
+    label_cols: list = field(default_factory=lambda: ['s1_lrg_fraction', 's1_spiral_fraction', 's1_other_fraction'])  # Label column names
 
 def label_highest_prob(row):
     """
@@ -57,7 +57,7 @@ def loaddata(cfg) -> pd.DataFrame:
     """
     expected_csv_loc = 'galaxy.csv'  # Expect the CSV file to be in the current folder
     df = pd.read_csv(expected_csv_loc)
-    df['other'] = 1 - (df['s1_lrg_fraction'] + df['s1_spiral_fraction'])
+    # df['other'] = 1 - (df['s1_lrg_fraction'] + df['s1_spiral_fraction'])
 
     # Load the data and select specified columns
     columns_to_select = cfg.feature_cols + cfg.label_cols
