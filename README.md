@@ -43,7 +43,10 @@ data = al.loaddata(cfg)
 # generate a csv file containing the model scores of the different query methods
 al.get_data(iterations = [50, 60], initial = [30, 40], batch = [50, 60], method = ["pytorch_N","pytorch_N"])
 ```
-<br/>
+# Dataset
+
+The dataset that was used for this project contained ~5200 galaxies. It can be viewed on excel using [This Link](https://artatuoft.slack.com/files/U05QNJ61FA7/F07CV51CFFG/karina_representations_for_junbo_khalid.csv).
+
 
 
 
