@@ -45,7 +45,7 @@ al.get_data(iterations = [50, 60], initial = [30, 40], batch = [50, 60], method 
 ```
 # Dataset
 
-The dataset that was used for this project contained ~5200 galaxies. It can be viewed on excel using [This Link](https://artatuoft.slack.com/files/U05QNJ61FA7/F07CV51CFFG/karina_representations_for_junbo_khalid.csv).
+The dataset that was used for this project contained ~5200 galaxies. It can be viewed on excel using [This Link](https://docs.google.com/spreadsheets/d/1wNmAqCF6vYWlkeholPEZQDJ1QFmoZ13O5fW1kR5rBoo/edit?gid=1126909556#gid=1126909556).
 
 
 
