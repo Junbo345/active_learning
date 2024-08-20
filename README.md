@@ -1,4 +1,4 @@
-Codes for active learning
+**Active Learning Strategies for Euclid Space Telescope**
 
 to enable epoch changes, add max_spochs = self.max_epochs in the trainer of estimators
 
