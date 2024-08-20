@@ -80,10 +80,10 @@ def get_data(iterations, initial, batch, method):
     Generate data for plotting the performance of different sampling methods over iterations.
 
     Parameters:
-    iterations (List[int]): Number of iterations for each method
-    initial (List[int]): Initial pool of data for each method
-    batch (List[int]): Number of data points in each batch of iteration
-    method (List[str]): Regression method for each iteration
+    iterations (list[int]): Number of iterations for each method
+    initial (list[int]): Initial pool of data for each method
+    batch (list[int]): Number of data points in each batch of iteration
+    method (list[str]): Regression method for each iteration
     """
     col = max(iterations)
 
@@ -123,11 +123,11 @@ def get_data(iterations, initial, batch, method):
 
 def get_y_baseline(train, test, cfg):
     """
-    Compute the baseline score using the specified regression method.
+    Compute the baseline score using the specified regression method. It is done by fitting all the data in the training model to the model.
 
     Parameters:
-    train (DataFrame): Training data
-    test (DataFrame): Testing data
+    train (DataFrame): Data for training. Here, it should contain columns of input features and columns of output labels (in one-hot encoding).
+    test (DataFrame): Data for testing, same structure as training data
     cfg (ActiveLearningConfig): Configuration for active learning
 
     Returns:
@@ -145,7 +145,8 @@ def get_y_baseline(train, test, cfg):
 
 def get_active_learner(cfg):
     """
-    Initialize and return an active learner based on the specified regression method in the config.
+    Initialize and return an active learner based on the specified regression method in the config. 'L' and 'M' are logistic regression and MLP implemented by scikit-learn. 'pytorch_N' and 'pytorch_M' are logistic regression and MLP implemented through
+    pytorch. If using Badge, 'pytorch_N' and 'pytorch_M' should be chosen.
 
     Parameters:
     cfg (ActiveLearningConfig): Configuration for active learning
@@ -170,12 +171,13 @@ def get_active_learner(cfg):
 
 def randomapp(train, test, cfg):
     """
-    Evaluate the performance of random sampling over multiple iterations.
+    Evaluate the performance of random appending on specified ML models. Sampling over multiple iterations.
 
     Parameters:
-    train (DataFrame): Training data
-    test (DataFrame): Testing data
-    cfg (ActiveLearningConfig): Configuration for active learning
+    train (DataFrame): Data for training. Should contain columns of input features and columns of output labels (in one-hot encoding).
+    test (DataFrame): Data for testing, same structure as training data
+    cfg (ActiveLearningConfig): Configuration for active learning, which includes initial sampling size,
+                                number of iterations, feature columns, label columns, and batch size.
 
     Returns:
     List[float]: Test scores for each iteration
@@ -208,12 +210,13 @@ def randomapp(train, test, cfg):
 
 def ambiguous(train, test, cfg):
     """
-    Evaluate the performance of ambiguous sampling over multiple iterations.
-
+    Evaluate the performance of ambiguous active learning algorithms (highest probs closest to 1/n, n = # of classes) on specified ML models. 
+    Sampling over multiple iterations.
+    
     Parameters:
-    train (DataFrame): Training data
-    test (DataFrame): Testing data
-    cfg (ActiveLearningConfig): Configuration for active learning
+    train (DataFrame): Training data, see randomapp for details
+    test (DataFrame): Testing data, see randomapp for details
+    cfg (ActiveLearningConfig): Configuration for active learning, see randomapp for details
 
     Returns:
     List[float]: Test scores for each iteration
@@ -247,12 +250,13 @@ def ambiguous(train, test, cfg):
 
 def diverse_matrix(train, test, cfg):
     """
-    Evaluate the performance of diverse sampling using a distance-based approach over multiple iterations.
+    Evaluate the performance of diverse active learning algorithms (most distant points wrt points already been labeled) on specified ML models. 
+    Sampling over multiple iterations.
 
     Parameters:
-    train (DataFrame): Training data
-    test (DataFrame): Testing data
-    cfg (ActiveLearningConfig): Configuration for active learning
+    train (DataFrame): Training data, see randomapp for details
+    test (DataFrame): Testing data, see randomapp for details
+    cfg (ActiveLearningConfig): Configuration for active learning, see randomapp for details
 
     Returns:
     List[float]: Test scores for each iteration
@@ -282,12 +286,14 @@ def diverse_matrix(train, test, cfg):
 
 def diverse_tree(train, test, cfg):
     """
-    Evaluate the performance of diverse sampling using a KD-Tree approach over multiple iterations.
+    Evaluate the performance of diverse active learning algorithms (most distant points wrt points already been labeled) on specified ML models. 
+    Sampling over multiple iterations.
+    Performs same as dicerse_matrix. But used CDK-Tree for distance calculation, should run faster. 
 
     Parameters:
-    train (DataFrame): Training data
-    test (DataFrame): Testing data
-    cfg (ActiveLearningConfig): Configuration for active learning
+    train (DataFrame): Training data, see randomapp for details
+    test (DataFrame): Testing data, see randomapp for details
+    cfg (ActiveLearningConfig): Configuration for active learning, see randomapp for details
 
     Returns:
     List[float]: Test scores for each iteration
@@ -332,13 +338,14 @@ def find_row_indices(subset_array, target_array):
 
 def badge(train, test, cfg):
     """
-    Evaluate the performance of active learning using the BADGE algorithm over multiple iterations.
+    Evaluate the performance of BADGE active learning algorithms (most distant points wrt points already been labeled) on specified ML models. 
+    https://arxiv.org/pdf/1906.03671
+    Sampling over multiple iterations. 
 
     Parameters:
-    train (DataFrame): Training data containing features and labels.
-    test (DataFrame): Testing data containing features and labels.
-    cfg (ActiveLearningConfig): Configuration for active learning, which includes initial sampling size,
-                                number of iterations, feature columns, label columns, and batch size.
+    train (DataFrame): Training data, see randomapp for details
+    test (DataFrame): Testing data, see randomapp for details
+    cfg (ActiveLearningConfig): Configuration for active learning, see randomapp for details
 
     Returns:
     List[float]: Test scores for each iteration of active learning.
@@ -412,47 +419,4 @@ def badge(train, test, cfg):
     trace.append(model.score(test_x, test_y))
 
     return trace
-
-
-def plot():
-    """
-    Generate and display plots to visualize the performance of different sampling methods.
-    """
-    data = pd.read_csv(r'C:/Users/20199/Desktop/model.csv')
-    labels = list(data.columns)
-    x_labels = [l for l in labels if l.startswith("x")]
-    y_labels = [l for l in labels if not l.startswith("x")]
-    methods = list(set(label.split()[1] for label in x_labels))
-
-    fig, axs = plt.subplots(nrows=2, ncols=2, figsize=(15, 10))
-    axs = axs.flatten()
-    colors = ["red", "blue", "green"]
-
-    for i, method in enumerate(methods):
-        ax = axs[i]
-        for j, color in enumerate(colors):
-            ax.plot(data[f'x{j + 1} {method}'], data[f'{["ran", "amb", "div"][j]}_{j + 1}'], color=color,
-                    label=f'{["Random", "Ambiguous", "Diverse"][j]} Sampling')
-        ax.set_xlabel("Number of samples")
-        ax.set_ylabel("Score")
-        ax.set_title(f'Sampling Method: {method}')
-        ax.legend()
-        ax.xaxis.set_major_locator(ticker.MaxNLocator(integer=True))
-        ax.grid(True)
-
-    plt.tight_layout()
-    plt.show()
-
-
-if __name__ == '__main__':
-
-    # https://lightning.ai/docs/pytorch/stable/extensions/logging.html#configure-console-logging
-    logging.getLogger("lightning.pytorch").setLevel(logging.ERROR)
-
-    # ignore all warnings
-    simplefilter(action='ignore')
-
-    # loaddata()
-    get_data(iterations=[6,10], initial=[50,70], batch=[500,300], method=["pytorch_N","pytorch_N"])
-    # get_data(iterations=[75], initial=[50], batch=[30], method=["pytorch_N"])
 
