@@ -27,10 +27,15 @@ Other Python packages need to be installed:
 # Quickstart
 The code will output a file that contains the performance scores of each iteration. The scores are calculated by **|log(1-percent correct)|**. Below is the sample output: <br/>
 
-![image](https://github.com/user-attachments/assets/29af6138-e814-4cbd-a672-e21a05b2d7b1)
+![image](https://github.com/user-attachments/assets/29af6138-e814-4cbd-a672-e21a05b2d7b1) <br/>
+
+To generate the data, you need the initial data which would be a data frame that has feature columns that contain data for each feature, as well as label column, which is the one-hot encoding of each class you want to categorize. Below is the sample data: <br/>
+
+![image](https://github.com/user-attachments/assets/93abb92c-6e2a-4e16-b279-d27c4d7cead1)
+
+Feat_pca 0-19 are features of each sample data, and last three columns are labels for each classes
 
 
-Suppose you wanted to determine how well some query method can accurately classify between LRG galaxies, ring galaxies, and other galaxies in some small dataset. We can calculate the proposed model scores by first configuring the number of iterations, the initial batch, and the batch size of the query functions and determining the regression method. Then putting the calculated scores into a csv file: <br/>
 
 ```ruby
 from dataclasses import dataclass, field
