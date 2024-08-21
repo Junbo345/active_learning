@@ -10,6 +10,7 @@ To Download the code using GithubCLI to bring GitHub to your terminal: ```gh rep
 <br/>
 
 Otherwise, the code can be copied and pasted into a Python environment and run from there. <br/>
+
 Other Python packages need to be installed: <br/>
 Numpy <br/>
 Pandas <br/>
