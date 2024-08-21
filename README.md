@@ -28,10 +28,11 @@ Other Python packages need to be installed:
 File contained <br/>
 
 **user.py**: Sample code to run the project <br/>
-**active_learning_badge**: active learning algorithms, containing BADGE, diversity, uncertainty, and random as a baseline <br/>
-**estimators_badge**: MLP models customized for BADGE <br/>
-**data_cleaner**: Code that is used to clean the original galaxy data to badge training <br/>
-**data_calculator**: Code to store the scores of each iteration. <br/>
+**active_learning_badge.py**: active learning algorithms, containing BADGE, diversity, uncertainty, and random as a baseline <br/>
+**estimators_badge.py**: MLP models customized for BADGE <br/>
+**data_cleaner.py**: Code that is used to clean the original galaxy data to badge training <br/>
+**data_calculator.py**: Code to store the scores of each iteration. <br/>
+
 Other files will not affect this project currently, you may discard them. <br/>
 
 # Quickstart
