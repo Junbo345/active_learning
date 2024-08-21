@@ -13,16 +13,16 @@ Otherwise, the code can be copied and pasted into a Python environment and run f
 
 Other Python packages need to be installed: 
 <br/>
-Numpy <br/>
-Pandas <br/>
-Scikit-Learn <br/>
-Torch <br/>
-Torch-lightning <br/>
-Omegaconf <br/>
-Dataclasses <br/>
-Warnings <br/>
-Logging <br/>
-Scipy <br/>
+**Numpy** <br/>
+**Pandas** <br/>
+**Scikit-Learn** <br/>
+**Torch** <br/>
+**Torch-lightning** <br/>
+**Omegaconf** <br/>
+**Dataclasses** <br/>
+**Warnings** <br/>
+**Logging** <br/>
+**Scipy** <br/>
 
 # Quickstart
 
