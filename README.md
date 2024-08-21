@@ -9,7 +9,18 @@ To Download the code using git: ```git@github.com:Junbo345/active_learning.git``
 To Download the code using GithubCLI to bring GitHub to your terminal: ```gh repo clone Junbo345/active_learning```
 <br/>
 
-Otherwise, the code can be copied and pasted into a python environment and run from there
+Otherwise, the code can be copied and pasted into a Python environment and run from there
+Other Python packages need to be installed: 
+Numpy
+Pandas
+Scikit-Learn
+Torch
+Torch-lightning
+Omegaconf
+Dataclasses
+Warnings
+Logging
+Scipy
 
 # Quickstart
 
