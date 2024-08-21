@@ -29,58 +29,37 @@ The code will output a file that contains the performance scores of each iterati
 
 ![image](https://github.com/user-attachments/assets/29af6138-e814-4cbd-a672-e21a05b2d7b1) <br/>
 
-To generate the data, you need the initial data which would be a data frame that has feature columns that contain data for each feature, as well as label column, which is the one-hot encoding of each class you want to categorize. Below is the sample data: <br/>
+To generate the data, you need the initial data which would be a data frame that has feature columns that contain data for each feature, as well as label columns, which is the one-hot encoding of each class you want to categorize. Below is the sample data: <br/>
 
 ![image](https://github.com/user-attachments/assets/93abb92c-6e2a-4e16-b279-d27c4d7cead1)
 
-Feat_pca 0-19 are features of each sample data, and last three columns are labels for each classes
+Feat_pca 0-19 are features of each sample data, and the last three columns are labels for each class. <br/>
 
-
+The file should be put in the same folder as the code is downloaded. Nevagate to the folder, Open users, replace the file name in the following code: <br/>
 
 ```ruby
-from dataclasses import dataclass, field
-from omegaconf import OmegaConf
-import logging
-from warnings import simplefilter
-import pandas as pd
-import data_calculator
+data = pd.read_csv("model_cleaned.csv")
+```
+<br/>
 
+Enter feature & label columns in the following code: <br/>
 
-@dataclass
-class LoopConfig:
-    times: int = 50  # Number of iterations in the active learning loop
-    init: int = 50  # Initial number of samples to start the active learning process
-    batch_size: int = 15  # Number of samples to add in each iteration
-
-
-@dataclass
-class Learner:
-    regression_method: str = 'L'  # Default regression method (L: Logistic Regression, M: MLPClassifier)
-
-
-@dataclass
-class ActiveLearningConfig:
-    loop: LoopConfig = field(default_factory=LoopConfig)
-    learner: Learner = field(default_factory=Learner)
+```ruby
     feature_cols: list = field(
         default_factory=lambda: ['feat_pca_{}'.format(i) for i in range(20)])  # Feature column names
     label_cols: list = field(
         default_factory=lambda: ['s1_lrg_fraction', 's1_spiral_fraction', 'other'])  # Label column names
+```
+<br/>
 
-
-cfg = OmegaConf.structured(ActiveLearningConfig)
-
-# https://lightning.ai/docs/pytorch/stable/extensions/logging.html#configure-console-logging
-logging.getLogger("lightning.pytorch").setLevel(logging.ERROR)
-
-# ignore all warnings
-simplefilter(action='ignore')
-
-data = pd.read_csv("model_cleaned.csv")
-
+Enter Initial sample size, number of iterations, batch size, and model type you want to test as a list: <br/>
+```ruby
 data_calculator.get_data(iterations=[7, 12], initial=[50, 70], batch=[500, 300], method=["pytorch_N", "pytorch_N"],
                          data=data, cfg=cfg)
 ```
+<br/>
+Run the script, you will then see the file in the folder after it finishes
+
 # Dataset
 
 The dataset that was used for this project contained ~5200 galaxies. It can be viewed using [This Link](https://docs.google.com/spreadsheets/d/1wNmAqCF6vYWlkeholPEZQDJ1QFmoZ13O5fW1kR5rBoo/edit?gid=1126909556#gid=1126909556). 
