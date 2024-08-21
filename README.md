@@ -24,6 +24,16 @@ Other Python packages need to be installed:
 **Logging** <br/>
 **Scipy** <br/>
 
+# File intro
+File contained <br/>
+
+**user.py**: Sample code to run the project <br/>
+**active_learning_badge**: active learning algorithms, containing BADGE, diversity, uncertainty, and random as a baseline <br/>
+**estimators_badge**: MLP models customized for BADGE <br/>
+**data_cleaner**: Code that is used to clean the original galaxy data to badge training <br/>
+**data_calculator**: Code to store the scores of each iteration. <br/>
+Other files will not affect this project currently, you may discard them. <br/>
+
 # Quickstart
 The code will output a file that contains the performance scores of each iteration. The scores are calculated by **|log(1-percent correct)|**. Below is the sample output: <br/>
 
@@ -63,7 +73,7 @@ Run the script, you will then see the file in the folder after it finishes
 # Dataset
 
 The dataset that was used for this project contained ~5200 galaxies. It can be viewed using [This Link](https://docs.google.com/spreadsheets/d/1wNmAqCF6vYWlkeholPEZQDJ1QFmoZ13O5fW1kR5rBoo/edit?gid=1126909556#gid=1126909556). 
-<br/> It contains 20 feature columns and multiple target columns, each representing a possible galaxy shape. The s1_ and s2_ prefixes mean stage 1 and stage 2. All galaxies were labelled in stage 1. Only galaxies with at least one stage 1 vote for lens were labelled in stage 2. Hence, only a small portion of galaxies have stage 2 labels.
+<br/> It contains 20 feature columns and multiple target columns, each representing a possible galaxy shape. The s1_ and s2_ prefixes mean stage 1 and stage 2. All galaxies were labeled in stage 1. Only galaxies with at least one stage 1 vote for lens were labeled in stage 2. Hence, only a small portion of galaxies have stage 2 labels.
 
 
 
