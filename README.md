@@ -10,17 +10,17 @@ To Download the code using GithubCLI to bring GitHub to your terminal: ```gh rep
 <br/>
 
 Otherwise, the code can be copied and pasted into a Python environment and run from there
-Other Python packages need to be installed: 
-Numpy
-Pandas
-Scikit-Learn
-Torch
-Torch-lightning
-Omegaconf
-Dataclasses
-Warnings
-Logging
-Scipy
+Other Python packages need to be installed: <br/>
+Numpy <br/>
+Pandas <br/>
+Scikit-Learn <br/>
+Torch <br/>
+Torch-lightning <br/>
+Omegaconf <br/>
+Dataclasses <br/>
+Warnings <br/>
+Logging <br/>
+Scipy <br/>
 
 # Quickstart
 
