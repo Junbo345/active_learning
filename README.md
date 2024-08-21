@@ -25,7 +25,8 @@ Other Python packages need to be installed:
 **Scipy** <br/>
 
 # Quickstart
-The code will output a file that contains the performance scores of each iteration. The scores are calculated by |log(1-percent correct)|. Below is the sample output: <br/>
+The code will output a file that contains the performance scores of each iteration. The scores are calculated by **|log(1-percent correct)|**. Below is the sample output: <br/>
+
 ![image](https://github.com/user-attachments/assets/29af6138-e814-4cbd-a672-e21a05b2d7b1)
 
 
