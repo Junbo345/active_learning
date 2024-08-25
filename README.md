@@ -1,8 +1,10 @@
 # **Active Learning Strategies for Euclid Space Telescope**
 
-This code contains different active learning strategies to improve the classification rate for galaxy morphology. It contains 3 different acquisition functions (ambiguous, diverse, BADGE) that aim to maximize the model score using different regression methods such as an MLP or Multinomial Logistic Regression. After conducting multiple different experiments, it was found the BADGE method provided the highest model scores and was not affected by batch size changes meaning that it would provide the best classification for the Euclid data. 
+This repository contains code for implementing various active learning strategies to enhance the classification accuracy of galaxy morphology using data from the Euclid Space Telescope. Three different acquisition functions are provided—Ambiguous, Diverse, and BADGE—that aim to maximize model performance through regression methods such as MLP (Multilayer Perceptron) and Multinomial Logistic Regression.
 
-# Installation
+Through extensive experimentation, the BADGE method was found to consistently yield the highest model scores. Notably, BADGE is robust against changes in batch size, making it the most reliable strategy for classifying Euclid data. 
+
+## Installation
 
 To Download the code using git: ```git@github.com:Junbo345/active_learning.git``` <br/>
 <br/>
@@ -11,42 +13,53 @@ To Download the code using GithubCLI to bring GitHub to your terminal: ```gh rep
 
 Otherwise, the code can be copied and pasted into a Python environment and run from there. <br/>
 
-Other Python packages need to be installed: 
-<br/>
-**Numpy** <br/>
-**Pandas** <br/>
-**Scikit-Learn** <br/>
-**Torch** <br/>
-**Torch-lightning** <br/>
-**Omegaconf** <br/>
-**Dataclasses** <br/>
-**Warnings** <br/>
-**Logging** <br/>
-**Scipy** <br/>
+### Required Python Packages
 
-# File intro
-File contained <br/>
+Ensure the following Python packages are installed:
 
-**user.py**: Sample code to run the project <br/>
-**active_learning_badge.py**: active learning algorithms, containing BADGE, diversity, uncertainty, and random as a baseline <br/>
-**estimators_badge.py**: MLP models customized for BADGE <br/>
-**data_cleaner.py**: Code that is used to clean the original galaxy data to badge training <br/>
-**data_calculator.py**: Code to store the scores of each iteration. <br/>
+- **Numpy**
+- **Pandas**
+- **Scikit-Learn**
+- **Torch**
+- **Torch-lightning**
+- **Omegaconf**
+- **Dataclasses**
+- **Warnings**
+- **Logging**
+- **Scipy**
 
-Other files will not affect this project currently, you may discard them. <br/>
+## File Overview
 
-# Quickstart
-The code will output a file that contains the performance scores of each iteration. The scores are calculated by **|log(1-percent correct)|**. Below is the sample output: <br/>
+The key files in this repository are:
 
-![image](https://github.com/user-attachments/assets/29af6138-e814-4cbd-a672-e21a05b2d7b1) <br/>
+- **`user.py`**: Example script to run the project.
+- **`active_learning_badge.py`**: Contains the active learning algorithms, including BADGE, diversity, uncertainty, and random (baseline).
+- **`estimators_badge.py`**: Custom MLP models tailored for the BADGE method.
+- **`data_cleaner.py`**: Script for cleaning the original galaxy data for use in BADGE training.
+- **`data_calculator.py`**: Script to store the performance scores of each iteration.
 
-To generate the data, you need the initial data, which would be a data frame with feature columns containing data for each feature and label columns, which is the one-hot encoding of each class you want to categorize. Below is the sample data: <br/>
+Other files in the repository are not required for this project and can be ignored.
 
-![image](https://github.com/user-attachments/assets/93abb92c-6e2a-4e16-b279-d27c4d7cead1)
+## Quickstart
 
-Feat_pca 0-19 are features of each sample data, and the last three columns are labels for each class. <br/>
+Running the code will generate a file containing the performance scores for each iteration. The scores are calculated using the formula **|log(1-percent correct)|**. Below is a sample output:
 
-The file should be put in the same folder as the code is downloaded. Nevagate to the folder, Open users, replace the file name in the following code: <br/>
+![Sample Output](https://github.com/user-attachments/assets/29af6138-e814-4cbd-a672-e21a05b2d7b1)
+
+### Data Preparation
+
+To generate the data, you will need an initial dataset formatted as a DataFrame. The DataFrame should include:
+
+- **Feature Columns**: Data for each feature.
+- **Label Columns**: One-hot encoded labels for each class.
+
+Sample data:
+
+![Sample Data](https://github.com/user-attachments/assets/93abb92c-6e2a-4e16-b279-d27c4d7cead1)
+
+The feature columns (e.g., `feat_pca_0` to `feat_pca_19`) represent the features of each sample, while the last three columns are the labels for each class.
+
+Place this file in the same directory where the code is located. Then, navigate to the folder and modify the following lines in the `user.py` script: <br/>
 
 ```ruby
 data = pd.read_csv("model_cleaned.csv")
