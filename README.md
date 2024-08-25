@@ -84,7 +84,7 @@ data_calculator.get_data(iterations=[7, 12], initial=[50, 70], batch=[500, 300],
 <br/>
 Run the script, you will then see the file in the folder after it finishes
 
-# Dataset
+## Dataset
 
 The dataset that was used for this project contained ~5200 galaxies. It can be viewed using [This Link](https://docs.google.com/spreadsheets/d/1wNmAqCF6vYWlkeholPEZQDJ1QFmoZ13O5fW1kR5rBoo/edit?gid=1126909556#gid=1126909556). 
 <br/> It contains 20 feature columns and multiple target columns, each representing a possible galaxy shape. The s1_ and s2_ prefixes mean stage 1 and stage 2. All galaxies were labeled in stage 1. Only galaxies with at least one stage 1 vote for lens were labeled in stage 2. Hence, only a small portion of galaxies have stage 2 labels.
