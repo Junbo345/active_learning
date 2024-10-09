@@ -6,7 +6,6 @@ from sklearn.cluster import kmeans_plusplus
 from sklearn.neural_network import MLPClassifier
 from sklearn.linear_model import LogisticRegression
 import estimators_badge as estimators
-import math
 
 
 # Default configuration values using OmegaConf and dataclasses
