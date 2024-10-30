@@ -55,7 +55,7 @@ class LightningEstimator():
         # Convert numpy arrays to torch tensors if needed
         if isinstance(x, np.ndarray):
             x = torch.from_numpy(x).float()
-            y = torch.from_numpy(y).long()
+            y = torch.from_numpy(y).float()
 
         # Split data into training and validation sets
         x_train, x_val, y_train, y_val = train_test_split(x, y, test_size=0.2, random_state=42)
@@ -284,8 +284,8 @@ class MLP(pl.LightningModule):
         """
         x, y = batch
         y_hat = self.model(x)
-        y_max = torch.argmax(y, dim=1)
-        loss = torch.nn.functional.cross_entropy(y_hat, y_max)
+        # y_max = torch.argmax(y, dim=1)
+        loss = torch.nn.functional.cross_entropy(y_hat, y.float()) #y_max)
         self.log('train_loss', loss)  # Log the training loss
         return loss
 
@@ -302,8 +302,8 @@ class MLP(pl.LightningModule):
         """
         x, y = batch
         y_hat = self.model(x)
-        y_max = torch.argmax(y, dim=1)
-        loss = torch.nn.functional.cross_entropy(y_hat, y_max)
+        # y_max = torch.argmax(y, dim=1)
+        loss = torch.nn.functional.cross_entropy(y_hat, y.float()) #y_max)
         self.log('validation_loss', loss)  # Log the validation loss
         return loss
 
@@ -404,11 +404,17 @@ class Multiregression(pl.LightningModule):
 # Example usage of the models and LightningEstimator
 if __name__ == '__main__':
     # Simulate some data
-    x = np.random.randn(1000, 10)  # Generate random input data
-    y = (x.mean(axis=1) > 0.5).astype(int)  # Generate binary labels based on the mean of the features
+    x = np.random.randn(1000, 10)
+
+    # Calculate the first column of y based on (sum_x + 1) / 2 for each row
+    y_first_column = (x.sum(axis=1) + 1) / 10
+
+    # Stack y_first_column with 1 - y_first_column to create two columns
+    y = np.column_stack((y_first_column, 1 - y_first_column))
+
 
     # Initialize a Logistic Regression model
-    model = LogisticRegression(input_dim=10, output_dim=2)
-    estimator = LightningEstimator(model, max_epochs=10)  # Create a LightningEstimator for training
+    model = MLP(10, [100,100,50,25],2)
+    estimator = LightningEstimator(model, max_epochs=100)  # Create a LightningEstimator for training
     estimator.fit(x, y)  # Train the model
     print(estimator.score(x, y))  # Evaluate and print the model's accuracy
