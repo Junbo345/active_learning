@@ -40,9 +40,9 @@ def get_data(iterations, initial, batch, method, data, cfg):
         x = np.arange(cfg.loop.times + 1) * cfg.loop.batch_size + cfg.loop.init
 
         # Calculate the Y-axis values for different sampling methods
-        y1 = abs(np.log(1 - np.array(alb.badge(train, test, cfg))))
-        y2 = abs(np.log(1 - np.array(alb.diverse_tree(train, test, cfg))))
-        y3 = abs(np.log(1 - np.array(alb.randomapp(train, test, cfg))))
+        y1 = np.array(alb.badge(train, test, cfg))
+        y2 = np.array(alb.diverse_tree(train, test, cfg))
+        y3 = np.array(alb.randomapp(train, test, cfg))
         output[f'x{ind + 1} {method[ind]}'] = np.concatenate([x, np.full(col - len(x) + 1, np.nan)])
         output[f'badge_{ind + 1}'] = np.concatenate([y1, np.full(col - len(x) + 1, np.nan)])
         output[f'uncertainty_{ind + 1}'] = np.concatenate([y2, np.full(col - len(x) + 1, np.nan)])
@@ -86,6 +86,6 @@ if __name__ == '__main__':
     data = pd.read_csv('model_cleaned.csv')
 
     # loaddata()
-    get_data(iterations=[6, 10], initial=[50, 70], batch=[500, 300], method=["pytorch_N", "pytorch_N"], data=data,
+    get_data(iterations=[6, 10], initial=[50, 70], batch=[20000, 12000], method=["pytorch_N", "pytorch_N"], data=data,
              cfg=cfg)
     # get_data(iterations=[75], initial=[50], batch=[30], method=["pytorch_N"])
